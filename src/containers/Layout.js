@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux';
 import actions from '../store/actions'
+import AuthForm from './AuthForm'
 
 class Layout extends Component {
     constructor(props) {
@@ -14,10 +15,9 @@ class Layout extends Component {
     }    
 
     render() { 
-        const {title} = this.props
         return ( 
             <div className="container">
-                {title}
+                <AuthForm />
             </div>
         );
     }
@@ -26,13 +26,17 @@ class Layout extends Component {
 const mapStateToProps = (state = {}) => {
     return {
       socket: state.socket,
+      user: state.user,
     }
   }
 
 const mapDispatchToProps = dispatch => {
     return {
-        initSocket: () => {
+        initSocket() {
             dispatch(actions.initSocket());
+        },
+        connectUser(user) {
+            dispatch(actions.connectUser(user));
         }
     };
 };
