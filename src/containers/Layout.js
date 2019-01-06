@@ -2,22 +2,37 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux';
 import actions from '../store/actions'
 import AuthForm from './AuthForm'
+import Chat from './Chat'
 
 class Layout extends Component {
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {
+            loggedIn: false
+        }
     }
 
     componentWillMount() {
         this.props.initSocket()
-        console.log(this)
-    }    
+    }
 
-    render() { 
+    componentWillReceiveProps(nextProps) {
+        const token = localStorage.getItem("token")
+
+        if (token === nextProps.user.token) {
+            this.setState({"loggedIn": true})
+        } else {
+            this.setState({"loggedIn": false})
+        }
+    }
+
+    render() {
+        let { loggedIn } = this.state
         return ( 
             <div className="container">
-                <AuthForm />
+                {
+                    loggedIn ? <Chat /> : <AuthForm />
+                }
             </div>
         );
     }
@@ -34,9 +49,6 @@ const mapDispatchToProps = dispatch => {
     return {
         initSocket() {
             dispatch(actions.initSocket());
-        },
-        connectUser(user) {
-            dispatch(actions.connectUser(user));
         }
     };
 };

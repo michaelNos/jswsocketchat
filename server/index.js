@@ -1,12 +1,85 @@
-const app = require('http').createServer()
-const io = require('socket.io')(app)
+const app = require('express')()
+const server = require('http').Server(app)
+const io = require('socket.io')(server)
+const bodyParser = require('body-parser')
+const bcrypt = require('bcrypt-nodejs')
+const redis = require('redis')
+const cors = require('cors')
 
 const PORT = process.env.PORT || 3231
+const client = redis.createClient()
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(cors());
 
 io.on('connection', socket => {
     console.log('Connected to socket id ', socket.id);
 })
 
-app.listen(PORT, () => {
+app.post('/auth', (req, res) => {
+
+    if (!req.body.token) {
+        client.hgetall(req.body.email, (err, obj) => {
+            if (obj) {
+                const connected = bcrypt.compareSync(req.body.password, obj.hash);
+                if (connected) {
+                    res.json({"token": obj.hash, "email": req.body.email});
+                } else {
+                    res.json({"error": "Password incorrect"});
+                } 
+            } else {
+                const hash = bcrypt.hashSync(req.body.password);
+                client.hmset(req.body.email, "hash", hash);
+                res.json({"token": hash, "email": req.body.email});
+            }
+        });
+    } else {
+        if (req.body.email) {
+            client.hgetall(req.body.email, (err, obj) => {
+                if (obj.hash === req.body.token) {
+                    res.json({"token": obj.hash, "email": req.body.email});
+                }
+            });
+        } else {
+            client.keys('*', (err, obj) => {
+                obj.forEach(email => {
+                    client.hgetall(email, (err, obj) => {
+                        if (obj.hash === req.body.token) {
+                            res.json({"token": obj.hash, "email": req.body.email});
+                        } else {
+                            res.json({"error": "Token incorrect"});
+                        }
+                    });
+                });
+            });
+        }
+    }
+})
+
+app.post('/verify', (req, res, next) => {
+    console.log(req.body.email, req.body.token);
+    if (req.body.email && req.body.token) {
+        client.hgetall(req.body.email, (err, obj) => {
+            if (obj.hash === req.body.token) {
+                res.json({"token": obj.hash, "email": req.body.email});
+            }
+        });
+    } else {
+        client.keys('*', (err, obj) => {
+            obj.forEach(email => {
+                client.hgetall(email, (err, obj) => {
+                    if (obj.hash === req.body.token) {
+                        res.json({"token": obj.hash, "email": req.body.email});
+                    } else {
+                        res.json({"error": "User not exist or token incorrect"});
+                    }
+                });
+            });
+        });
+    }
+})
+
+server.listen(PORT, () => {
     console.log('Connected to server on port ', PORT);
 })
