@@ -7,31 +7,24 @@ import Chat from './Chat'
 class Layout extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            loggedIn: false
-        }
+        this.state = {}
     }
 
     componentWillMount() {
         this.props.initSocket()
     }
 
-    componentWillReceiveProps(nextProps) {
-        const token = localStorage.getItem("token")
-
-        if (token === nextProps.user.token) {
-            this.setState({"loggedIn": true})
-        } else {
-            this.setState({"loggedIn": false})
-        }
-    }
-
     render() {
-        let { loggedIn } = this.state
+        let { loading, verified } = this.props
+        console.log(loading, verified)
+        if (loading) {
+            return <div>Loading ...</div>
+        }
+
         return ( 
             <div className="container">
                 {
-                    loggedIn ? <Chat /> : <AuthForm />
+                    verified ? <Chat /> : <AuthForm />
                 }
             </div>
         );
@@ -42,8 +35,10 @@ const mapStateToProps = (state = {}) => {
     return {
       socket: state.socket,
       user: state.user,
+      loading: state.loading,
+      verified: state.verified
     }
-  }
+}
 
 const mapDispatchToProps = dispatch => {
     return {

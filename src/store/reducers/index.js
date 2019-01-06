@@ -2,7 +2,9 @@ import types from '../types'
 
 const initialState = {
     socket: null,
-    user: {}
+    user: {},
+    loading: false,
+    verified: false,
 };
 
 export default (state = initialState, action) => {
@@ -25,7 +27,8 @@ export default (state = initialState, action) => {
         case types.USER_VERIFIED:
             return {
                 ...state,
-                user: action.payload
+                user: action.payload,
+                verified: true
             }
         case types.USER_ERROR:
             return {
@@ -37,6 +40,16 @@ export default (state = initialState, action) => {
                 ...state,
                 user: action.payload
             }
+        case types.LOADING_START:
+            return {
+                ...state,
+                loading: true
+            }   
+        case types.LOADING_END:
+            return {
+                ...state,
+                loading: false
+            }          
         default:
             return state;
     }

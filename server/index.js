@@ -19,7 +19,7 @@ io.on('connection', socket => {
 
 app.post('/auth', (req, res) => {
 
-    if (!req.body.token) {
+    if (req.body.token === 'undefined') {
         client.hgetall(req.body.email, (err, obj) => {
             if (obj) {
                 const connected = bcrypt.compareSync(req.body.password, obj.hash);
@@ -35,48 +35,27 @@ app.post('/auth', (req, res) => {
             }
         });
     } else {
-        if (req.body.email) {
+        if (req.body.email !== 'undefined' && req.body.token !== 'undefined') {
             client.hgetall(req.body.email, (err, obj) => {
                 if (obj.hash === req.body.token) {
                     res.json({"token": obj.hash, "email": req.body.email});
                 }
             });
         } else {
-            client.keys('*', (err, obj) => {
-                obj.forEach(email => {
-                    client.hgetall(email, (err, obj) => {
-                        if (obj.hash === req.body.token) {
-                            res.json({"token": obj.hash, "email": req.body.email});
-                        } else {
-                            res.json({"error": "Token incorrect"});
-                        }
-                    });
-                });
-            });
+            res.json({"error": "Create user"});
         }
     }
 })
 
 app.post('/verify', (req, res, next) => {
-    console.log(req.body.email, req.body.token);
-    if (req.body.email && req.body.token) {
+    if (req.body.email !== 'undefined' && req.body.token !== 'undefined') {
         client.hgetall(req.body.email, (err, obj) => {
             if (obj.hash === req.body.token) {
                 res.json({"token": obj.hash, "email": req.body.email});
             }
         });
     } else {
-        client.keys('*', (err, obj) => {
-            obj.forEach(email => {
-                client.hgetall(email, (err, obj) => {
-                    if (obj.hash === req.body.token) {
-                        res.json({"token": obj.hash, "email": req.body.email});
-                    } else {
-                        res.json({"error": "User not exist or token incorrect"});
-                    }
-                });
-            });
-        });
+        res.json({"error": "Create user"});
     }
 })
 

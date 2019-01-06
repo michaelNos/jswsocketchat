@@ -31,11 +31,13 @@ export default {
         return dispatch => {
 
             const token = localStorage.getItem("token")
+            dispatch({type: types.LOADING_START})
 
             axios.post(`${api}/auth`, { email, password, token })
                 .then((response) => {
                     if (response.data.error) {
                         dispatch({type: types.USER_ERROR, payload: response.data})
+                        dispatch({type: types.LOADING_END})
                         return false
                     }
 
@@ -44,6 +46,7 @@ export default {
                         localStorage.setItem("email", response.data.email)
                     } 
                     dispatch({type: types.USER_AUTHENTICATED, payload: response.data})
+                    dispatch({type: types.LOADING_END})
                 })
                 .catch((err) => {
                     throw new Error(err);
@@ -56,10 +59,14 @@ export default {
         const email = localStorage.getItem("email")
 
         return dispatch => {
+
+            dispatch({type: types.LOADING_START})
+
             axios.post(`${api}/verify`, { token, email })
                 .then((response) => {
                     if (response.data.error) {
                         dispatch({type: types.USER_ERROR, payload: response.data})
+                        dispatch({type: types.LOADING_END})
                         return false
                     }
 
@@ -68,6 +75,8 @@ export default {
                         localStorage.setItem("email", response.data.email)
                     }
                     dispatch({type: types.USER_VERIFIED, payload: response.data})
+                    dispatch({type: types.LOADING_END})
+                    
                 })
                 .catch((err) => {
                     throw new Error(err);

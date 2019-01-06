@@ -10,6 +10,9 @@ class Chat extends Component {
     componentWillMount() {}
 
     render() {
+
+        const { user, socket } = this.props
+        console.log(user, socket)
         return ( 
             <div className="container">
                 Chat
@@ -18,8 +21,14 @@ class Chat extends Component {
     }
 }
 
+const mapStateToProps = (state = {}) => {
+    return {
+      socket: state.socket,
+      user: state.user,
+    }
+}
 
 export default connect(
-    null,
+    mapStateToProps,
     null
 )(Chat);
