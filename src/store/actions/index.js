@@ -64,6 +64,7 @@ export default {
 
             axios.post(`${api}/verify`, { token, email })
                 .then((response) => {
+                    console.log(response)
                     if (response.data.error) {
                         dispatch({type: types.USER_ERROR, payload: response.data})
                         dispatch({type: types.LOADING_END})
