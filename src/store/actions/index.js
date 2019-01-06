@@ -21,6 +21,14 @@ export default {
             dispatch({type: types.USER_CONNECTED, payload: user})
         }
     },
+    connectedUsers() {
+        return dispatch => {
+            socket.on(types.USER_CONNECTED, (users) => {
+                console.log('users', users)
+                dispatch({type: types.CONNECTED_USERS, payload: users})
+            })
+        }
+    },
     logoutUser() {
         return dispatch => {
             socket.emit(types.USER_LOGOUT)
@@ -64,7 +72,6 @@ export default {
 
             axios.post(`${api}/verify`, { token, email })
                 .then((response) => {
-                    console.log(response)
                     if (response.data.error) {
                         dispatch({type: types.USER_ERROR, payload: response.data})
                         dispatch({type: types.LOADING_END})

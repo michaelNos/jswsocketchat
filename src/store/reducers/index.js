@@ -3,6 +3,7 @@ import types from '../types'
 const initialState = {
     socket: null,
     user: {},
+    users: [],
     loading: false,
     verified: false,
 };
@@ -18,6 +19,11 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 user: action.payload
+            }
+        case types.CONNECTED_USERS:
+            return {
+                ...state,
+                users: action.payload
             }
         case types.USER_AUTHENTICATED:
             return {

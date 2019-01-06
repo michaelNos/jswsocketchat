@@ -10,12 +10,25 @@ class Chat extends Component {
 
     componentWillMount() {
         this.props.connectUser(this.props.user)
+        this.props.connectedUsers()
+
+    }
+
+    createChat(otherUser) {
+        this.props.createChat(otherUser)
     }
 
     render() {
 
-        const { user, socket } = this.props
-        console.log(user, socket)
+        const { user, users } = this.props
+        console.log(user, users)
+
+        if (users.length > 1) {
+            const position = users.indexOf(user.email)
+            console.log(position)
+            users.splice(position, 1);
+        }
+
         return ( 
             <div className="container">
                 <nav className="navbar is-white topNav">
@@ -30,15 +43,13 @@ class Chat extends Component {
                                                 <span className="icon">
                                                     <i className="fa fa-user"></i>
                                                 </span>
-                                                <span>
-                                                    User
-                                                </span>
+                                                <span>{user.email}</span>
                                             </p>
                                         </div>
                                         <div className="control">
                                             <p className="button is-small is-info is-outlined">
                                                 <span className="icon">
-                                                    <i className="fa fa-user"></i>
+                                                    <i className="fa fa-eject"></i>
                                                 </span>
                                                 <span>Logout</span>
                                             </p>
@@ -58,7 +69,13 @@ class Chat extends Component {
                                     Connected users
                                 </p>
                                 <ul className="menu-list">
-                                    users
+                                    {
+                                        users.map((otherUser, index) => {
+                                            return (
+                                                <li onClick = {() => {this.createChat(otherUser)}} key={index}>{otherUser}</li>
+                                            )
+                                        })
+                                    }
                                 </ul>
                             </aside>
                         </div>
@@ -97,6 +114,7 @@ const mapStateToProps = (state = {}) => {
     return {
       socket: state.socket,
       user: state.user,
+      users: state.users
     }
 }
 
@@ -104,7 +122,13 @@ const mapDispatchToProps = dispatch => {
     return {
         connectUser(user) {
             dispatch(actions.connectUser(user));
-        }
+        },
+        createChat(otherUser) {
+            dispatch(actions.createChat(otherUser));
+        },
+        connectedUsers() {
+            dispatch(actions.connectedUsers());
+        } 
     };
 };
 

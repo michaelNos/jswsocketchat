@@ -13,25 +13,27 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(cors());
 
-let connectedUsers = {};
+let connectedUsers = [];
 
-function addUser(userList, user) {
-    let newList = Object.assign({}, userList);
-    newList[user.email] = user;
-    return newList;
-}
+// function addUser(userList, user) {
+//     let newList = Object.assign({}, userList);
+//     newList[user.email] = user;
+//     return newList;
+// }
 
-function removeUser(userList, user) {
-    let newList = Object.assign({}, userList);
-    delete newList[user.email];
-    return newList;
-}
+// function removeUser(userList, user) {
+//     let newList = Object.assign({}, userList);
+//     delete newList[user.email];
+//     return newList;
+// }
 
 io.on('connection', socket => {
     console.log('Connected to socket id ', socket.id);
 
     socket.on('USER_CONNECTED', (user) => {
-        connectedUsers = addUser(connectedUsers, user);
+        if(connectedUsers.indexOf(user.email) === -1) {
+            connectedUsers.push(user.email);
+        }
 
         io.emit('USER_CONNECTED', connectedUsers);
         socket.user = user;
