@@ -31,7 +31,8 @@ export default (state = initialState, action) => {
         case types.ROOM_CREATED:
             return {
                 ...state,
-                room: action.payload
+                room: action.payload.room,
+                messages: action.payload.messages
             }
         case types.MESSAGE_SENT:
             return {
@@ -41,7 +42,8 @@ export default (state = initialState, action) => {
         case types.MESSAGE_RECIEVED:
             return {
                 ...state,
-                messages: action.payload
+                room: action.payload.room,
+                messages: action.payload.messages
             }
         case types.USER_AUTHENTICATED:
             return {

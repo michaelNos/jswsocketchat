@@ -24,7 +24,6 @@ export default {
     connectedUsers() {
         return dispatch => {
             socket.on(types.CONNECTED_USERS, (users) => {
-                console.log(users)
                 dispatch({type: types.CONNECTED_USERS, payload: users})
             })
         }
@@ -40,7 +39,6 @@ export default {
     createRoom() {
         return dispatch => {
             socket.on(types.ROOM_CREATED, (room) => {
-                console.log('room', room)
                 dispatch({type: types.ROOM_CREATED, payload: room})
             })
         }
@@ -54,7 +52,6 @@ export default {
     messageRecived() {
         return dispatch => {
             socket.on(types.MESSAGE_RECIEVED, (messages) => {
-                console.log('room', messages)
                 dispatch({type: types.MESSAGE_RECIEVED, payload: messages})
             })
         }

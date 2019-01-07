@@ -15,7 +15,6 @@ app.use(cors());
 
 let connectedUsers = [];
 let room = [];
-let messages = [];
 
 io.on('connection', socket => {
     console.log('Connected to socket id ', socket.id);
@@ -65,21 +64,29 @@ io.on('connection', socket => {
             room.push(chat.otherUser);
         }
 
-        room.forEach(roomUser => {
-            if (io.sockets.connected[roomUser.socketId]) {
-                io.sockets.connected[roomUser.socketId].emit('ROOM_CREATED', room);
-            }
+        const roomId = room[0].email + ':' + room[1].email;
+
+        client.lrange(roomId, 0, -1, (err, messages) => {
+            
+            room.forEach(roomUser => {
+                if (io.sockets.connected[roomUser.socketId]) {
+                    io.sockets.connected[roomUser.socketId].emit('ROOM_CREATED', {room, messages, roomId});
+                }
+            });
         });
     });
 
-    socket.on('MESSAGE_SENT', (obj) => {
-        messages.push(obj)
-        console.log(messages)
+    socket.on('MESSAGE_SENT', (message) => {
+        const roomId = room[0].email + ':' + room[1].email;
 
-        room.forEach(roomUser => {
-            if (io.sockets.connected[roomUser.socketId]) {
-                io.sockets.connected[roomUser.socketId].emit('MESSAGE_RECIEVED', messages);
-            }
+        client.rpush(roomId, message.sender + ':' + message.message);
+
+        client.lrange(roomId, 0, -1, (err, messages) => {
+            room.forEach(roomUser => {
+                if (io.sockets.connected[roomUser.socketId]) {
+                    io.sockets.connected[roomUser.socketId].emit('MESSAGE_RECIEVED', {room, messages, roomId});
+                }
+            });
         });
     });
 })

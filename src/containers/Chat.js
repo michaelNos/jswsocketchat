@@ -21,20 +21,29 @@ class Chat extends Component {
     createChat(otherUser, currentUser) {
         this.props.createChat(otherUser, currentUser)
         this.props.createRoom()
+        this.scrollToBottom()
     }
 
     handleSubmit(e) {
         e.preventDefault();
         this.props.sendMessage(this.state.message, this.props.user.email)
-    }  
+        this.scrollToBottom()
+    }
+    
+    scrollToBottom() {
+        this.messagesEnd.scrollIntoView({ behavior: "smooth"});
+    }
 
     render() {
 
         const { user, users, room, messages } = this.props
+
+        console.log(user);
         console.log(messages);
+
         let currentUser = {}
 
-        if (users.length > 1) {
+        if (users.length > 0) {
             users.forEach((connectedUser, index) => {
                 if (connectedUser.email === user.email) {
                     currentUser = users.splice(index, 1)[0]
@@ -56,7 +65,7 @@ class Chat extends Component {
                                                 <span className="icon">
                                                     <i className="fa fa-user"></i>
                                                 </span>
-                                                <span>{currentUser.email} : {currentUser.socketId}</span>
+                                                <span>{user.email}</span>
                                             </p>
                                         </div>
                                         <div className="control">
@@ -94,53 +103,55 @@ class Chat extends Component {
                         </div>
                         <div className="column is-9">
                             <div className="box content">
-                                <div className="title">
-                                    {
-                                        room.length ?
-                                            <div>
-                                                <p className="title">Chat room</p>
+                                {
+                                    room ?
+                                        <div className="messageBox">
+                                            <p className="title">Chat room</p>
+                                            {
+                                                room.map((roomUser) => {
+                                                    return (
+                                                        <span key={roomUser.socketId}>{roomUser.email} - </span>
+                                                    )
+                                                })
+                                            }
+                                            <div className="messages">
                                                 {
-                                                    room.map((roomUser) => {
+                                                    messages.map((message, index) => {
                                                         return (
-                                                            <span key={roomUser.socketId}>{roomUser.email} - </span>
+                                                            <Message message={message.split(/:(.+)/)[0]} sender={message.split(/:(.+)/)[1]} key={index}/>
                                                         )
                                                     })
                                                 }
-                                                <div className="messages">
-                                                    {
-                                                        messages.map((message, index) => {
-                                                            return (
-                                                                <Message message={message.message} sender={message.sender} key={index}/>
-                                                            )
-                                                        })
-                                                    }
+                                                <hr/>
+                                                <div style={{ float:"left", clear: "both" }}
+                                                    ref={(el) => { this.messagesEnd = el }}>
                                                 </div>
-                                                <form onSubmit={this.handleSubmit.bind(this)} className="typing">
-                                                    <div className="field">
-                                                        <p className="control has-icons-left has-icons-right">
-                                                            <input 
-                                                                className="input" 
-                                                                type="text" 
-                                                                placeholder="Message"
-                                                                required 
-                                                                value={this.state.message}
-                                                                onChange={(e) => this.setState({message: e.target.value})}/>
-                                                            <span className="icon is-small is-left">
-                                                                <i className="fa fa-envelope"></i>
-                                                            </span>
-                                                        </p>
-                                                    </div>
-                                                    <div className="field is-grouped is-grouped-centered">
-                                                        <p className="control">
-                                                            <button className="button is-primary">Send</button>
-                                                        </p>
-                                                    </div>
-                                                </form>
                                             </div>
-                                        :
-                                        null
-                                    }
-                                </div>
+                                            <form onSubmit={this.handleSubmit.bind(this)} className="typing">
+                                                <div className="field">
+                                                    <p className="control has-icons-left has-icons-right">
+                                                        <input 
+                                                            className="input" 
+                                                            type="text" 
+                                                            placeholder="Message"
+                                                            required 
+                                                            value={this.state.message}
+                                                            onChange={(e) => this.setState({message: e.target.value})}/>
+                                                        <span className="icon is-small is-left">
+                                                            <i className="fa fa-envelope"></i>
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                                <div className="field is-grouped is-grouped-centered">
+                                                    <p className="control">
+                                                        <button className="button is-primary">Send</button>
+                                                    </p>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    :
+                                    null
+                                }
                             </div>
                         </div>
                     </div>
