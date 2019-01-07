@@ -14,30 +14,73 @@ app.use(bodyParser.urlencoded({extended:false}));
 app.use(cors());
 
 let connectedUsers = [];
-
-// function addUser(userList, user) {
-//     let newList = Object.assign({}, userList);
-//     newList[user.email] = user;
-//     return newList;
-// }
-
-// function removeUser(userList, user) {
-//     let newList = Object.assign({}, userList);
-//     delete newList[user.email];
-//     return newList;
-// }
+let room = [];
+let messages = [];
 
 io.on('connection', socket => {
     console.log('Connected to socket id ', socket.id);
 
     socket.on('USER_CONNECTED', (user) => {
-        if(connectedUsers.indexOf(user.email) === -1) {
-            connectedUsers.push(user.email);
+        let socketUser = {
+            email: user.email,
+            socketId: socket.id
+        };
+        let exist = false;
+
+        if (connectedUsers.length === 0) {
+            connectedUsers.push(socketUser);
         }
 
-        io.emit('USER_CONNECTED', connectedUsers);
+        connectedUsers.forEach(connectedUser => {
+            if (connectedUser.email === socketUser.email) {
+                exist = true;
+                return exist;
+            }
+        });
+
+        if (!exist) {
+            connectedUsers.push(socketUser);
+
+        }
+
+        io.emit('CONNECTED_USERS', connectedUsers);
         socket.user = user;
-        console.log('connectedUsers', connectedUsers);
+    });
+
+    socket.on('CHAT_CREATED', (chat) => {
+        let exist = false;
+
+        if (room.length === 0) {
+            room.push(chat.otherUser, chat.currentUser);
+        }
+
+        room.forEach(roomUser => {
+            if (roomUser.email === chat.otherUser.email) {
+                exist = true;
+                return exist;
+            }
+        });
+
+        if (!exist) {
+            room.push(chat.otherUser);
+        }
+
+        room.forEach(roomUser => {
+            if (io.sockets.connected[roomUser.socketId]) {
+                io.sockets.connected[roomUser.socketId].emit('ROOM_CREATED', room);
+            }
+        });
+    });
+
+    socket.on('MESSAGE_SENT', (obj) => {
+        messages.push(obj)
+        console.log(messages)
+
+        room.forEach(roomUser => {
+            if (io.sockets.connected[roomUser.socketId]) {
+                io.sockets.connected[roomUser.socketId].emit('MESSAGE_RECIEVED', messages);
+            }
+        });
     });
 })
 
@@ -71,7 +114,6 @@ app.post('/verify', (req, res, next) => {
         req.body.token !== 'undefined' && 
         req.body.email !== null && 
         req.body.token !== null) {
-        console.log(req.body.email, req.body.token);
         client.hgetall(req.body.email, (err, obj) => {
             if (obj) {
                 if (obj.hash === req.body.token) {

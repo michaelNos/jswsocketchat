@@ -1,32 +1,45 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux';
 import actions from '../store/actions'
+import Message from '../components/Message'
 
 class Chat extends Component {
     constructor(props) {
         super(props);
-        this.state = {}
+        this.state = {
+            message: ''
+        }
     }
 
     componentWillMount() {
         this.props.connectUser(this.props.user)
         this.props.connectedUsers()
-
+        this.props.createRoom()
+        this.props.messageRecived()
     }
 
-    createChat(otherUser) {
-        this.props.createChat(otherUser)
+    createChat(otherUser, currentUser) {
+        this.props.createChat(otherUser, currentUser)
+        this.props.createRoom()
     }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        this.props.sendMessage(this.state.message, this.props.user.email)
+    }  
 
     render() {
 
-        const { user, users } = this.props
-        console.log(user, users)
+        const { user, users, room, messages } = this.props
+        console.log(messages);
+        let currentUser = {}
 
         if (users.length > 1) {
-            const position = users.indexOf(user.email)
-            console.log(position)
-            users.splice(position, 1);
+            users.forEach((connectedUser, index) => {
+                if (connectedUser.email === user.email) {
+                    currentUser = users.splice(index, 1)[0]
+                }
+            });
         }
 
         return ( 
@@ -43,7 +56,7 @@ class Chat extends Component {
                                                 <span className="icon">
                                                     <i className="fa fa-user"></i>
                                                 </span>
-                                                <span>{user.email}</span>
+                                                <span>{currentUser.email} : {currentUser.socketId}</span>
                                             </p>
                                         </div>
                                         <div className="control">
@@ -70,9 +83,9 @@ class Chat extends Component {
                                 </p>
                                 <ul className="menu-list">
                                     {
-                                        users.map((otherUser, index) => {
+                                        users.map((otherUser) => {
                                             return (
-                                                <li onClick = {() => {this.createChat(otherUser)}} key={index}>{otherUser}</li>
+                                                <li onClick = {() => {this.createChat(otherUser, currentUser)}} key={otherUser.socketId}>{otherUser.email}</li>
                                             )
                                         })
                                     }
@@ -81,26 +94,53 @@ class Chat extends Component {
                         </div>
                         <div className="column is-9">
                             <div className="box content">
-                                <article className="post">
-                                    <div className="media">
-                                        <div className="media-left">
-                                            <p className="image is-32x32">
-                                                <img src="http://bulma.io/images/placeholders/128x128.png" alt="is-32x32"/>
-                                            </p>
-                                        </div>
-                                        <div className="media-content">
-                                            <div className="content">
-                                                <p>
-                                                    <span>@jsmith</span> replied 34 minutes ago &nbsp;
-                                                    <span className="tag">Question</span>
-                                                </p>
+                                <div className="title">
+                                    {
+                                        room.length ?
+                                            <div>
+                                                <p className="title">Chat room</p>
+                                                {
+                                                    room.map((roomUser) => {
+                                                        return (
+                                                            <span key={roomUser.socketId}>{roomUser.email} - </span>
+                                                        )
+                                                    })
+                                                }
+                                                <div className="messages">
+                                                    {
+                                                        messages.map((message, index) => {
+                                                            return (
+                                                                <Message message={message.message} sender={message.sender} key={index}/>
+                                                            )
+                                                        })
+                                                    }
+                                                </div>
+                                                <form onSubmit={this.handleSubmit.bind(this)} className="typing">
+                                                    <div className="field">
+                                                        <p className="control has-icons-left has-icons-right">
+                                                            <input 
+                                                                className="input" 
+                                                                type="text" 
+                                                                placeholder="Message"
+                                                                required 
+                                                                value={this.state.message}
+                                                                onChange={(e) => this.setState({message: e.target.value})}/>
+                                                            <span className="icon is-small is-left">
+                                                                <i className="fa fa-envelope"></i>
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                    <div className="field is-grouped is-grouped-centered">
+                                                        <p className="control">
+                                                            <button className="button is-primary">Send</button>
+                                                        </p>
+                                                    </div>
+                                                </form>
                                             </div>
-                                        </div>
-                                        <div className="media-right">
-                                            <span className="has-text-grey-light"><i className="fa fa-comments"></i> 1</span>
-                                        </div>
-                                    </div>
-                                </article>
+                                        :
+                                        null
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -114,20 +154,31 @@ const mapStateToProps = (state = {}) => {
     return {
       socket: state.socket,
       user: state.user,
-      users: state.users
+      users: state.users,
+      room: state.room,
+      messages: state.messages,
     }
 }
 
 const mapDispatchToProps = dispatch => {
     return {
         connectUser(user) {
-            dispatch(actions.connectUser(user));
+            dispatch(actions.connectUser(user))
         },
-        createChat(otherUser) {
-            dispatch(actions.createChat(otherUser));
+        createChat(otherUser, currentUser) {
+            dispatch(actions.createChat(otherUser, currentUser))
+        },
+        createRoom() {
+            dispatch(actions.createRoom())
         },
         connectedUsers() {
-            dispatch(actions.connectedUsers());
+            dispatch(actions.connectedUsers())
+        },
+        sendMessage(message, sender) {
+            dispatch(actions.sendMessage(message, sender))
+        },
+        messageRecived() {
+            dispatch(actions.messageRecived())
         } 
     };
 };

@@ -23,9 +23,39 @@ export default {
     },
     connectedUsers() {
         return dispatch => {
-            socket.on(types.USER_CONNECTED, (users) => {
-                console.log('users', users)
+            socket.on(types.CONNECTED_USERS, (users) => {
+                console.log(users)
                 dispatch({type: types.CONNECTED_USERS, payload: users})
+            })
+        }
+    },
+    createChat(otherUser, currentUser) {
+        let chat = {otherUser, currentUser}
+
+        return dispatch => {
+            socket.emit(types.CHAT_CREATED, chat)
+            dispatch({type: types.CHAT_CREATED, payload: chat})
+        }
+    },
+    createRoom() {
+        return dispatch => {
+            socket.on(types.ROOM_CREATED, (room) => {
+                console.log('room', room)
+                dispatch({type: types.ROOM_CREATED, payload: room})
+            })
+        }
+    },
+    sendMessage(message, sender) {
+        return dispatch => {
+            socket.emit(types.MESSAGE_SENT, {message, sender})
+            dispatch({type: types.MESSAGE_SENT, payload: message})
+        }
+    },
+    messageRecived() {
+        return dispatch => {
+            socket.on(types.MESSAGE_RECIEVED, (messages) => {
+                console.log('room', messages)
+                dispatch({type: types.MESSAGE_RECIEVED, payload: messages})
             })
         }
     },

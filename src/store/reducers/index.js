@@ -4,8 +4,11 @@ const initialState = {
     socket: null,
     user: {},
     users: [],
+    room: [],
     loading: false,
     verified: false,
+    messages: [],
+    message: ''
 };
 
 export default (state = initialState, action) => {
@@ -24,6 +27,21 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 users: action.payload
+            }
+        case types.ROOM_CREATED:
+            return {
+                ...state,
+                room: action.payload
+            }
+        case types.MESSAGE_SENT:
+            return {
+                ...state,
+                message: action.payload
+            }
+        case types.MESSAGE_RECIEVED:
+            return {
+                ...state,
+                messages: action.payload
             }
         case types.USER_AUTHENTICATED:
             return {
