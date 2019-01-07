@@ -46,6 +46,17 @@ io.on('connection', socket => {
         socket.user = user;
     });
 
+    socket.on('USER_LOGOUT', (user) => {
+        connectedUsers.forEach((connectedUser, index) => {
+            if (connectedUser.email === user) {
+                connectedUsers.splice(index, 1)
+            }
+        });
+
+        io.emit('CONNECTED_USERS', connectedUsers);
+        socket.user = null;
+    });
+
     socket.on('CHAT_CREATED', (chat) => {
         let exist = false;
 

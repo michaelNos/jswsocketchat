@@ -56,10 +56,12 @@ export default {
             })
         }
     },
-    logoutUser() {
+    logOut() {
         return dispatch => {
-            socket.emit(types.USER_LOGOUT)
-            dispatch({type: types.USER_LOGOUT, payload: null})
+            socket.emit(types.USER_LOGOUT, localStorage.getItem("email"))
+            localStorage.removeItem("token")
+            localStorage.removeItem("email")
+            dispatch({type: types.USER_LOGOUT})
         }
     },
     authenticate(email, password) {
@@ -89,15 +91,16 @@ export default {
         }
     },
     verify() {
-
-        const token = localStorage.getItem("token")
-        const email = localStorage.getItem("email")
-
         return dispatch => {
 
             dispatch({type: types.LOADING_START})
+            const token = localStorage.getItem("token")
+            const email = localStorage.getItem("email")
+    
+            console.log(token, email)
 
-            axios.post(`${api}/verify`, { token, email })
+            if (token && email) {
+                axios.post(`${api}/verify`, { token, email })
                 .then((response) => {
                     if (response.data.error) {
                         dispatch({type: types.USER_ERROR, payload: response.data})
@@ -116,6 +119,9 @@ export default {
                 .catch((err) => {
                     throw new Error(err);
                 });
+            } else {
+                dispatch({type: types.LOADING_END})
+            }
         }
     }
 }

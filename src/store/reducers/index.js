@@ -6,6 +6,7 @@ const initialState = {
     users: [],
     room: [],
     loading: false,
+    authenticated: false,
     verified: false,
     messages: [],
     message: ''
@@ -48,7 +49,8 @@ export default (state = initialState, action) => {
         case types.USER_AUTHENTICATED:
             return {
                 ...state,
-                user: action.payload
+                user: action.payload,
+                authenticated: true
             }
         case types.USER_VERIFIED:
             return {
@@ -59,12 +61,18 @@ export default (state = initialState, action) => {
         case types.USER_ERROR:
             return {
                 ...state,
-                user: action.payload
+                user: action.payload,
+                authenticated: false,
+                verified: false,
+                loading: false
             }
         case types.USER_LOGOUT:
             return {
                 ...state,
-                user: action.payload
+                user: {},
+                authenticated: false,
+                verified: false,
+                loading: false
             }
         case types.LOADING_START:
             return {

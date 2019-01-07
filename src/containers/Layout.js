@@ -16,6 +16,7 @@ class Layout extends Component {
 
     render() {
         let { loading, verified } = this.props
+        
         if (loading) {
             return <div>Loading ...</div>
         }

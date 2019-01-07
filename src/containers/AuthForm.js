@@ -14,10 +14,7 @@ class AuthForm extends Component {
 
     
     componentWillMount() {
-        if (this.props.user.hasOwnProperty('error')) {
-            this.setState({"error": this.props.user.error})
-        } else {
-            this.setState({"error": ''})
+        if (!this.props.verified) {
             this.props.verify()
         }
     }
@@ -26,6 +23,12 @@ class AuthForm extends Component {
     handleSubmit(e) {
         e.preventDefault();
         this.props.authenticate(this.state.email, this.state.password)
+        if (this.props.authenticated) {
+            this.setState({"error": ''})
+            this.props.verify()
+        } else {
+            this.setState({"error": this.props.user.error})
+        }
     }    
 
     render() {
@@ -89,6 +92,8 @@ class AuthForm extends Component {
 const mapStateToProps = (state = {}) => {
     return {
       user: state.user,
+      authenticated: state.authenticated,
+      verified: state.verified
     }
   }
 

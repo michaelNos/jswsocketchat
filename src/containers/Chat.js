@@ -69,7 +69,7 @@ class Chat extends Component {
                                             </p>
                                         </div>
                                         <div className="control">
-                                            <p className="button is-small is-info is-outlined">
+                                            <p onClick = {() => {this.props.logOut()}} className="button is-small is-info is-outlined">
                                                 <span className="icon">
                                                     <i className="fa fa-eject"></i>
                                                 </span>
@@ -190,7 +190,10 @@ const mapDispatchToProps = dispatch => {
         },
         messageRecived() {
             dispatch(actions.messageRecived())
-        } 
+        },
+        logOut() {
+            dispatch(actions.logOut())
+        }
     };
 };
 
