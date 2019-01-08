@@ -38,9 +38,6 @@ class Chat extends Component {
 
         const { user, users, room, messages } = this.props
 
-        console.log(user);
-        console.log(messages);
-
         let currentUser = {}
 
         if (users.length > 0) {

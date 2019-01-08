@@ -96,8 +96,6 @@ export default {
             dispatch({type: types.LOADING_START})
             const token = localStorage.getItem("token")
             const email = localStorage.getItem("email")
-    
-            console.log(token, email)
 
             if (token && email) {
                 axios.post(`${api}/verify`, { token, email })
